@@ -89,6 +89,7 @@ function readCookie(r: Request, name: string) {
     const [k, ...v] = part.trim().split("=");
     if (k === name) return decodeURIComponent(v.join("="));
   }
+  return undefined;
 }
 
 const cookie = (c: Cfg, value: string, maxAge?: number) =>

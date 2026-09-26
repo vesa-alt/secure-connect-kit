@@ -10,7 +10,7 @@ export function toNodeMiddleware(handler: Handler) {
     const headers = new Headers();
     for (const [k, v] of Object.entries(req.headers)) if (typeof v === "string") headers.set(k, v);
     const request = new Request(`http://${req.headers.host ?? "localhost"}${req.url}`, {
-      method: req.method,
+      method: req.method ?? "GET",
       headers,
       body: req.method === "GET" || req.method === "HEAD" ? null : new Uint8Array(Buffer.concat(chunks)),
     });
