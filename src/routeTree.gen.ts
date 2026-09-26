@@ -10,9 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ApiAuthLoginRouteImport } from './routes/api/auth/login'
-import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
-import { Route as ApiAuthSessionRouteImport } from './routes/api/auth/session'
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiProtectedDataRouteImport } from './routes/api/protected/data'
 
 const IndexRoute = IndexRouteImport.update({
@@ -20,19 +18,9 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiAuthLoginRoute = ApiAuthLoginRouteImport.update({
-  id: '/api/auth/login',
-  path: '/api/auth/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiAuthLogoutRoute = ApiAuthLogoutRouteImport.update({
-  id: '/api/auth/logout',
-  path: '/api/auth/logout',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiAuthSessionRoute = ApiAuthSessionRouteImport.update({
-  id: '/api/auth/session',
-  path: '/api/auth/session',
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiProtectedDataRoute = ApiProtectedDataRouteImport.update({
@@ -43,55 +31,31 @@ const ApiProtectedDataRoute = ApiProtectedDataRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/api/auth/login': typeof ApiAuthLoginRoute
-  '/api/auth/logout': typeof ApiAuthLogoutRoute
-  '/api/auth/session': typeof ApiAuthSessionRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/protected/data': typeof ApiProtectedDataRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/api/auth/login': typeof ApiAuthLoginRoute
-  '/api/auth/logout': typeof ApiAuthLogoutRoute
-  '/api/auth/session': typeof ApiAuthSessionRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/protected/data': typeof ApiProtectedDataRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/api/auth/login': typeof ApiAuthLoginRoute
-  '/api/auth/logout': typeof ApiAuthLogoutRoute
-  '/api/auth/session': typeof ApiAuthSessionRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/protected/data': typeof ApiProtectedDataRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/api/auth/login'
-    | '/api/auth/logout'
-    | '/api/auth/session'
-    | '/api/protected/data'
+  fullPaths: '/' | '/api/auth/$' | '/api/protected/data'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/api/auth/login'
-    | '/api/auth/logout'
-    | '/api/auth/session'
-    | '/api/protected/data'
-  id:
-    | '__root__'
-    | '/'
-    | '/api/auth/login'
-    | '/api/auth/logout'
-    | '/api/auth/session'
-    | '/api/protected/data'
+  to: '/' | '/api/auth/$' | '/api/protected/data'
+  id: '__root__' | '/' | '/api/auth/$' | '/api/protected/data'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ApiAuthLoginRoute: typeof ApiAuthLoginRoute
-  ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
-  ApiAuthSessionRoute: typeof ApiAuthSessionRoute
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiProtectedDataRoute: typeof ApiProtectedDataRoute
 }
 
@@ -104,25 +68,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/auth/login': {
-      id: '/api/auth/login'
-      path: '/api/auth/login'
-      fullPath: '/api/auth/login'
-      preLoaderRoute: typeof ApiAuthLoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/auth/logout': {
-      id: '/api/auth/logout'
-      path: '/api/auth/logout'
-      fullPath: '/api/auth/logout'
-      preLoaderRoute: typeof ApiAuthLogoutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/auth/session': {
-      id: '/api/auth/session'
-      path: '/api/auth/session'
-      fullPath: '/api/auth/session'
-      preLoaderRoute: typeof ApiAuthSessionRouteImport
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/protected/data': {
@@ -137,9 +87,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ApiAuthLoginRoute: ApiAuthLoginRoute,
-  ApiAuthLogoutRoute: ApiAuthLogoutRoute,
-  ApiAuthSessionRoute: ApiAuthSessionRoute,
+  ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiProtectedDataRoute: ApiProtectedDataRoute,
 }
 export const routeTree = rootRouteImport
