@@ -8,4 +8,4 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
-- Auth library lives in src/lib/auth (config, auth.server, client) + /api/auth/* routes — stateless HMAC cookies, no DB needed.
+- Auth library in src/lib/auth is a portable, React-only package (fetch-style server handler + Vite plugin + Node adapter, plain CSS) so it drops into plain React + Vite apps; this app mounts it via api/auth/$.ts.
