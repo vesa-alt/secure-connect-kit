@@ -1,0 +1,43 @@
+/* sharedenv-login — self-contained styles. Override the variables to re-theme. */
+.sa {
+  --sa-bg: #1d1a16; --sa-card: #25211c; --sa-bar: #15130f; --sa-fg: #f2eee6; --sa-muted: #a79e8f;
+  --sa-border: #3a342c; --sa-accent: #f0b43c; --sa-accent-fg: #221c12; --sa-danger: #e5484d;
+  font-family: inherit; color: var(--sa-fg); box-sizing: border-box;
+}
+.sa *, .sa *::before, .sa *::after { box-sizing: inherit; }
+.sa-input { height: 36px; padding: 0 12px; border-radius: 6px; border: 1px solid var(--sa-border); background: rgba(0,0,0,.25);
+  color: var(--sa-fg); font: 13px ui-monospace, "JetBrains Mono", monospace; outline: none; }
+.sa-input:focus { border-color: var(--sa-accent); box-shadow: 0 0 0 2px rgba(240,180,60,.3); }
+.sa-btn { height: 36px; padding: 0 16px; border: 0; border-radius: 6px; background: var(--sa-accent); color: var(--sa-accent-fg);
+  font-weight: 600; font-size: 14px; cursor: pointer; }
+.sa-btn:disabled { opacity: .5; }
+.sa-err { color: var(--sa-danger); font-size: 12px; }
+.sa-icon { width: 16px; height: 16px; color: var(--sa-accent); flex: none; }
+
+.sa-banner { position: sticky; top: 0; z-index: 40; background: rgba(21,19,15,.95); backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--sa-border); }
+.sa-banner.sa-bottom { top: auto; bottom: 0; border-bottom: 0; border-top: 1px solid var(--sa-border); }
+.sa-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 16px; font-size: 14px; }
+.sa-row .sa-input { width: 144px; }
+.sa-tag { margin-right: 8px; font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: var(--sa-muted); }
+.sa-link { margin-left: auto; background: none; border: 0; color: var(--sa-muted); cursor: pointer; font-size: 14px; }
+.sa-link:hover { color: var(--sa-fg); }
+
+.sa-overlay { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 16px;
+  background: rgba(29,26,22,.7); backdrop-filter: blur(12px); }
+.sa-overlay.sa-contained { position: absolute; }
+.sa-card { width: 100%; max-width: 380px; padding: 24px; border-radius: 12px; border: 1px solid var(--sa-border);
+  background: var(--sa-card); box-shadow: 0 25px 50px -12px rgba(0,0,0,.6); }
+.sa-head { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; }
+.sa-badge { width: 36px; height: 36px; border-radius: 6px; display: grid; place-items: center; background: rgba(240,180,60,.15); }
+.sa-title { margin: 0; font-size: 16px; font-weight: 600; }
+.sa-sub { margin: 0; font-size: 12px; color: var(--sa-muted); }
+.sa-label { display: block; margin-bottom: 4px; font-size: 12px; color: var(--sa-muted); }
+.sa-card .sa-input { width: 100%; margin-bottom: 12px; }
+.sa-card .sa-btn { width: 100%; }
+.sa-card .sa-err { margin: 0 0 12px; padding: 8px 12px; border-radius: 6px; background: rgba(229,72,77,.1); }
+.sa-check { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; font-size: 14px; color: var(--sa-muted); }
+.sa-check input { accent-color: var(--sa-accent); }
+.sa-spin { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--sa-accent); border-top-color: transparent;
+  animation: sa-spin 1s linear infinite; }
+@keyframes sa-spin { to { transform: rotate(360deg); } }
