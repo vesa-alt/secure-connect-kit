@@ -165,16 +165,20 @@ function Docs() {
   return (
     <article className="max-w-3xl space-y-8">
       <section>
-        <h2 className="font-display text-2xl font-bold">Drop it in, in two steps</h2>
-        <p className="mt-2 text-muted-foreground">Copy <code className="font-mono text-primary">src/lib/auth/</code> and the <code className="font-mono text-primary">src/routes/api/auth/</code> routes into any project, set <code className="font-mono">SESSION_SECRET</code>, then:</p>
+        <h2 className="font-display text-2xl font-bold">Drop it into any React + Vite app, in two steps</h2>
+        <p className="mt-2 text-muted-foreground">Copy the <code className="font-mono text-primary">auth/</code> folder (only needs React, no other packages) into <code className="font-mono">src/</code> and set <code className="font-mono">SESSION_SECRET</code>.</p>
       </section>
       <section className="space-y-3">
-        <h3 className="font-mono text-sm uppercase tracking-widest text-primary">1 · Initialize</h3>
-        <Code>{`import { AuthProvider } from "@/lib/auth/client";
+        <h3 className="font-mono text-sm uppercase tracking-widest text-primary">1 · Add the Vite plugin + provider</h3>
+        <Code>{`// vite.config.ts
+import { sharedEnvLogin } from "./src/auth/vite";
+export default defineConfig({ plugins: [react(), sharedEnvLogin()] });
 
-<AuthProvider>
-  <App />
-</AuthProvider>`}</Code>
+// main.tsx
+import { AuthProvider } from "./auth/client";
+<AuthProvider><App /></AuthProvider>
+
+// production (Express): app.use(toNodeMiddleware(createAuthHandler()))`}</Code>
       </section>
       <section className="space-y-3">
         <h3 className="font-mono text-sm uppercase tracking-widest text-primary">2 · Mount a guard</h3>
