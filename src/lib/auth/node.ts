@@ -12,7 +12,7 @@ export function toNodeMiddleware(handler: Handler) {
     const request = new Request(`http://${req.headers.host ?? "localhost"}${req.url}`, {
       method: req.method,
       headers,
-      body: req.method === "GET" || req.method === "HEAD" ? undefined : Buffer.concat(chunks),
+      body: req.method === "GET" || req.method === "HEAD" ? null : new Uint8Array(Buffer.concat(chunks)),
     });
     const response = await handler(request);
     if (!response) return next();
