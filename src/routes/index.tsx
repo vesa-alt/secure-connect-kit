@@ -205,7 +205,7 @@ const { user, login, logout } = useAuth();`}</Code>
         <table className="w-full text-sm">
           <tbody className="[&_td]:border-b [&_td]:border-border [&_td]:py-2 [&_td:first-child]:font-mono [&_td:first-child]:text-primary">
             <tr><td>SESSION_SECRET</td><td>HMAC signing key. Rotate to revoke every session.</td></tr>
-            <tr><td>ADMIN_USERNAME</td><td>Override the global username (default <code>admin</code>).</td></tr>
+            <tr><td>ADMIN_PASSWORD_HASH</td><td>Encoded password <code>pbkdf2_sha256:iterations:salt:hash</code>. Generate it on the Admin page or with <code>node hash-password.mjs</code>. Changing it signs everyone out.</td></tr>
             <tr><td>ADMIN_PASSWORD_SALT / _HASH</td><td>Hex SHA-256 of <code>salt:password</code>. Changing it also revokes sessions.</td></tr>
             <tr><td>defaultAuthConfig</td><td><code>enabled</code>, <code>sessionTtlSeconds</code> (24h sliding), <code>maxAttempts</code> (5), <code>lockoutSeconds</code> (15 min).</td></tr>
           </tbody>
@@ -213,7 +213,7 @@ const { user, login, logout } = useAuth();`}</Code>
       </section>
       <section className="space-y-2 text-sm text-muted-foreground">
         <h2 className="font-display text-xl font-bold text-foreground">Security model</h2>
-        <p>• Stateless tokens <code>base64url(payload).HMAC-SHA256</code> in an <code>HttpOnly; Secure; SameSite=Lax</code> cookie — never readable from JavaScript.</p>
+        <p>• The plain password is never stored: input is re-encoded with PBKDF2-SHA256 (100k rounds, per-password salt) and compared in constant time.</p>
         <p>• Passwords compared as salted hashes with constant-time equality.</p>
         <p>• 5 failed attempts per IP → 15-minute lockout (HTTP 429). The counter is in memory per server instance.</p>
         <p>• Sliding expiration: a session past half its lifetime is silently re-issued on the next request.</p>
