@@ -1,37 +1,44 @@
-# Secure Connect Kit
+# SharedEnv Auth: library and showcase
 
-Build a reusable auth library and interactive showcase based on the attached specification:
+This project contains two things:
 
-Option A: Reusable auth guard package with both server middleware and React client primitives:
-1. Client components:
-- Non-Intrusive Banner Overlay (<AuthBanner />): Floating sticky bar across viewport with inline username, password, and sign-in button for public read-only pages with protected actions.
-- Full-Page Auth Guard Modal (<FullPageGuard />): Centered modal card intercepting protected routes with dimmed backdrop, error messages, and 'Remember Me'.
-- useAuth() hook and AuthProvider to manage authentication state across components.
-2. Server & Security:
-- Stateless HMAC session tokens signed with SESSION_SECRET stored in secure, HttpOnly, SameSite cookies.
-- Server-side route handlers / middleware (/api/auth/login, /api/auth/logout, /api/auth/session).
-- Timing-attack safe password comparison and rate-limiting brute force protection.
-3. Interactive playground & docs:
-- Interactive live demo switching between Banner mode, Full-Page Guard mode, and API-only guard mode.
-- Complete documentation tab explaining how to drop the library into any new project in two steps.
+1. **`src/lib/auth/`**, the **sharedenv-login** library. It's a portable admin login for any React project, and React is its only runtime dependency.
+   See [`src/lib/auth/README.md`](src/lib/auth/README.md) for the full installation and API guide.
+2. **The showcase app**, a live playground, documentation and an Admin page built on that library.
 
-This project was built with [Lovable](https://lovable.dev).
+## Pages
 
-## Build with Lovable
+| Path | What it shows |
+| --- | --- |
+| `/` | The playground. Switch between **A · Banner**, **B · Full-page guard** and **C · API only**. The **Docs** tab explains setup |
+| `/admin` | The Admin page. It uses the same login, shows the active settings and has a password encoder |
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/d93eb5d1-6149-404a-90a5-691d8dd616d5).
+## How this app uses the library
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
-
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
-
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
 ```
+src/lib/auth/            ← the library (copy this folder to reuse it)
+src/routes/api/auth/$.ts ← mounts createAuthHandler() at /api/auth/*
+src/routes/api/protected/data.ts ← example API route protected with requireAdmin()
+src/routes/index.tsx     ← playground + docs
+src/routes/admin.tsx     ← <FullPageGuard><AdminPanel/></FullPageGuard>
+```
+
+## Configuration
+
+| Variable | Required | Meaning |
+| --- | --- | --- |
+| `SESSION_SECRET` | yes | Key that signs sessions (32+ random characters) |
+| `ADMIN_USERNAME` | no | Admin username. Default `admin` |
+| `ADMIN_PASSWORD_HASH` | recommended | Encoded password (`pbkdf2_sha256:…`). Without it, the demo password `admin123` is used |
+| `AUTH_APP_NAME` | no | Name shown on the Admin page |
+| `AUTH_SESSION_TTL` | no | Session lifetime in seconds. Default 86400 |
+| `AUTH_ENABLED` | no | `false` turns protection off |
+
+Create an encoded password with `node src/lib/auth/hash-password.mjs "password"`, or with the box on the Admin page.
+
+## Reusing it in another React + Vite project
+
+1. Copy `src/lib/auth/` to `src/auth/` and add `sharedEnvLogin()` to `vite.config.ts`.
+2. Wrap the app in `<AuthProvider>` and place `<AuthBanner>`, `<FullPageGuard>` or `<AdminPanel>` wherever you need them.
+
+For production servers (Express, Workers, Vercel and others), see the library README.

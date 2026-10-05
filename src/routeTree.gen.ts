@@ -10,12 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiProtectedDataRouteImport } from './routes/api/protected/data'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
@@ -31,30 +37,34 @@ const ApiProtectedDataRoute = ApiProtectedDataRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/protected/data': typeof ApiProtectedDataRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/protected/data': typeof ApiProtectedDataRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/protected/data': typeof ApiProtectedDataRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/auth/$' | '/api/protected/data'
+  fullPaths: '/' | '/admin' | '/api/auth/$' | '/api/protected/data'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/auth/$' | '/api/protected/data'
-  id: '__root__' | '/' | '/api/auth/$' | '/api/protected/data'
+  to: '/' | '/admin' | '/api/auth/$' | '/api/protected/data'
+  id: '__root__' | '/' | '/admin' | '/api/auth/$' | '/api/protected/data'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiProtectedDataRoute: typeof ApiProtectedDataRoute
 }
@@ -66,6 +76,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/auth/$': {
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiProtectedDataRoute: ApiProtectedDataRoute,
 }
