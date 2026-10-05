@@ -19,7 +19,7 @@ export type AuthOptions = {
 export type SessionUser = { username: string; iat: number; exp: number };
 
 // Demo account admin / admin123 — used only when ADMIN_PASSWORD_HASH is not set.
-const DEMO_HASH = "pbkdf2_sha256$100000$c2hhcmVkZW52LWRlbW8tc2FsdA$mcBRxi2xWglZ_aB9uGZ7Q6L1ifroXissrADh6xiVa-s";
+const DEMO_HASH = "pbkdf2_sha256:100000:c2hhcmVkZW52LWRlbW8tc2FsdA:mcBRxi2xWglZ_aB9uGZ7Q6L1ifroXissrADh6xiVa-s";
 
 const env = (k: string) => (typeof process !== "undefined" ? process.env?.[k] : undefined) || undefined;
 

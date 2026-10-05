@@ -1,7 +1,7 @@
 // Password encoding shared by server, browser and CLI. Uses WebCrypto only.
 //
 // Encoded format (what you store in ADMIN_PASSWORD_HASH):
-//   pbkdf2_sha256$<iterations>$<salt base64url>$<hash base64url>
+//   pbkdf2_sha256:<iterations>:<salt base64url>:<hash base64url>
 //
 // The plain password is never stored. At sign-in the library reads the algorithm,
 // iterations and salt from the stored value, hashes the typed password the same way,
@@ -36,14 +36,14 @@ async function pbkdf2(password: string, salt: Uint8Array, iterations: number) {
 /** Encode a password for storage in ADMIN_PASSWORD_HASH. */
 export async function hashPassword(password: string, iterations = DEFAULT_ITERATIONS) {
   const salt = crypto.getRandomValues(new Uint8Array(16));
-  return `pbkdf2_sha256$${iterations}$${toB64url(salt)}$${await pbkdf2(password, salt, iterations)}`;
+  return `pbkdf2_sha256:${iterations}:${toB64url(salt)}:${await pbkdf2(password, salt, iterations)}`;
 }
 
 export type HashInfo = { algorithm: string; iterations: number; valid: boolean };
 
 /** Describe a stored value without revealing it. */
 export function describeHash(encoded: string): HashInfo {
-  const [algorithm = "unknown", it, salt, hash] = encoded.split("$");
+  const [algorithm = "unknown", it, salt, hash] = encoded.split(":");
   const iterations = Number(it);
   const valid = algorithm === "pbkdf2_sha256" && iterations > 0 && !!salt && !!hash;
   return { algorithm, iterations: valid ? iterations : 0, valid };
@@ -51,7 +51,7 @@ export function describeHash(encoded: string): HashInfo {
 
 /** Hash `password` with the stored parameters and compare in constant time. */
 export async function verifyPassword(password: string, encoded: string) {
-  const [algorithm, it, salt, expected] = encoded.split("$");
+  const [algorithm, it, salt, expected] = encoded.split(":");
   if (algorithm !== "pbkdf2_sha256" || !salt || !expected) return false;
   const iterations = Math.min(Number(it) || 0, DEFAULT_ITERATIONS);
   if (iterations <= 0) return false;
