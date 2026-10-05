@@ -38,6 +38,7 @@ function Page() {
                 {t === "play" ? "Playground" : "Docs"}
               </button>
             ))}
+            <Link to="/admin" className="rounded-md px-4 py-1.5 text-muted-foreground hover:text-foreground">Admin</Link>
           </nav>
         </div>
       </header>
