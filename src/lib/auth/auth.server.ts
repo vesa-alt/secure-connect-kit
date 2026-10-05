@@ -1,12 +1,15 @@
 // Zero-dependency server core. Works anywhere with Web Request/Response + WebCrypto
-// (Node 18+, Vite dev server, Express, Cloudflare Workers, Vercel, Netlify, Deno, Bun).
+// (Node 18+, Vite dev/preview, Express, Cloudflare Workers, Vercel, Netlify, Deno, Bun).
+import { describeHash, timingSafeEqual, toB64url, verifyPassword, fromB64url } from "./password";
+
+export { hashPassword, verifyPassword, timingSafeEqual } from "./password";
 
 export type AuthOptions = {
-  secret?: string; // default: process.env.SESSION_SECRET
-  username?: string; // default: process.env.ADMIN_USERNAME || "admin"
-  salt?: string; // default: process.env.ADMIN_PASSWORD_SALT
-  passwordHash?: string; // hex sha256(`${salt}:${password}`); default: process.env.ADMIN_PASSWORD_HASH
-  enabled?: boolean;
+  secret?: string; // default: env SESSION_SECRET
+  username?: string; // default: env ADMIN_USERNAME || "admin"
+  passwordHash?: string; // encoded value, default: env ADMIN_PASSWORD_HASH
+  appName?: string; // default: env AUTH_APP_NAME
+  enabled?: boolean; // default: env AUTH_ENABLED !== "false"
   cookieName?: string;
   ttlSeconds?: number; // sliding session lifetime
   maxAttempts?: number;
@@ -15,21 +18,24 @@ export type AuthOptions = {
 };
 export type SessionUser = { username: string; iat: number; exp: number };
 
-const env = (k: string) => (typeof process !== "undefined" ? process.env?.[k] : undefined);
+// Demo account admin / admin123 — used only when ADMIN_PASSWORD_HASH is not set.
+const DEMO_HASH = "pbkdf2_sha256$100000$c2hhcmVkZW52LWRlbW8tc2FsdA$mcBRxi2xWglZ_aB9uGZ7Q6L1ifroXissrADh6xiVa-s";
+
+const env = (k: string) => (typeof process !== "undefined" ? process.env?.[k] : undefined) || undefined;
 
 function resolve(o: AuthOptions = {}) {
   const secret = o.secret ?? env("SESSION_SECRET");
-  if (!secret) throw new Error("SESSION_SECRET is not configured");
+  if (!secret) throw new Error("[sharedenv-login] SESSION_SECRET is not configured");
+  const passwordHash = o.passwordHash ?? env("ADMIN_PASSWORD_HASH");
   return {
     secret,
     username: o.username ?? env("ADMIN_USERNAME") ?? "admin",
-    salt: o.salt ?? env("ADMIN_PASSWORD_SALT") ?? "sharedenv-salt",
-    // demo default = "admin123" — override in real projects
-    passwordHash:
-      o.passwordHash ?? env("ADMIN_PASSWORD_HASH") ?? "41580e02e52e39e012ce70006294115f86e6125b55002bf2607e5eb848c26434",
-    enabled: o.enabled ?? true,
+    passwordHash: passwordHash ?? DEMO_HASH,
+    demoCredentials: !passwordHash,
+    appName: o.appName ?? env("AUTH_APP_NAME") ?? "App",
+    enabled: o.enabled ?? env("AUTH_ENABLED") !== "false",
     cookieName: o.cookieName ?? "sharedenv_session",
-    ttlSeconds: o.ttlSeconds ?? 60 * 60 * 24,
+    ttlSeconds: o.ttlSeconds ?? Number(env("AUTH_SESSION_TTL") ?? 60 * 60 * 24),
     maxAttempts: o.maxAttempts ?? 5,
     lockoutSeconds: o.lockoutSeconds ?? 15 * 60,
     basePath: o.basePath ?? "/api/auth",
@@ -38,32 +44,16 @@ function resolve(o: AuthOptions = {}) {
 type Cfg = ReturnType<typeof resolve>;
 
 const enc = new TextEncoder();
-const b64url = (buf: ArrayBuffer) =>
-  btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-const fromB64url = (s: string) =>
-  new TextDecoder().decode(Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/")), (c) => c.charCodeAt(0)));
 
-async function sha256Hex(s: string) {
-  const d = await crypto.subtle.digest("SHA-256", enc.encode(s));
-  return [...new Uint8Array(d)].map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-/** Constant-time string comparison. */
-export function timingSafeEqual(a: string, b: string) {
-  let diff = a.length ^ b.length;
-  for (let i = 0; i < Math.max(a.length, b.length); i++) diff |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0);
-  return diff === 0;
-}
-
-// Key includes the password hash: rotating the secret OR the password revokes every session.
+// Signing key includes the stored hash: changing the secret OR the password signs everyone out.
 async function hmac(c: Cfg, data: string) {
   const key = await crypto.subtle.importKey("raw", enc.encode(c.secret + c.passwordHash), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
-  return b64url(await crypto.subtle.sign("HMAC", key, enc.encode(data)));
+  return toB64url(new Uint8Array(await crypto.subtle.sign("HMAC", key, enc.encode(data))));
 }
 
 async function signToken(c: Cfg, username: string) {
   const now = Math.floor(Date.now() / 1000);
-  const body = b64url(enc.encode(JSON.stringify({ username, iat: now, exp: now + c.ttlSeconds })).buffer as ArrayBuffer);
+  const body = toB64url(enc.encode(JSON.stringify({ username, iat: now, exp: now + c.ttlSeconds })));
   return `${body}.${await hmac(c, body)}`;
 }
 
@@ -71,7 +61,7 @@ async function verifyToken(c: Cfg, token?: string): Promise<SessionUser | null> 
   const [body, sig] = token?.split(".") ?? [];
   if (!body || !sig || !timingSafeEqual(sig, await hmac(c, body))) return null;
   try {
-    const p = JSON.parse(fromB64url(body)) as SessionUser;
+    const p = JSON.parse(new TextDecoder().decode(fromB64url(body))) as SessionUser;
     return p.exp > Date.now() / 1000 ? p : null;
   } catch {
     return null;
@@ -117,20 +107,54 @@ export async function requireAdmin(request: Request, opts?: AuthOptions) {
   return { user, response: null, setCookie };
 }
 
-/** Handles POST {basePath}/login, POST {basePath}/logout, GET {basePath}/session. Returns null for other URLs. */
+/** Safe, non-secret view of the active configuration (for the admin page). */
+function publicConfig(c: Cfg, user: SessionUser) {
+  const now = Date.now();
+  return {
+    appName: c.appName,
+    enabled: c.enabled,
+    username: c.username,
+    password: { ...describeHash(c.passwordHash), source: c.demoCredentials ? "demo default" : "ADMIN_PASSWORD_HASH" },
+    sessionSecret: { set: true, length: c.secret.length, strong: c.secret.length >= 32 },
+    cookie: { name: c.cookieName, flags: "HttpOnly; Secure; SameSite=Lax" },
+    session: { ttlSeconds: c.ttlSeconds, sliding: true, issuedAt: user.iat, expiresAt: user.exp },
+    rateLimit: {
+      maxAttempts: c.maxAttempts,
+      lockoutSeconds: c.lockoutSeconds,
+      lockedIps: [...attempts.values()].filter((e) => e.lockedUntil > now).length,
+    },
+    basePath: c.basePath,
+    warnings: [
+      c.demoCredentials && "Demo password in use — set ADMIN_PASSWORD_HASH.",
+      c.secret.length < 32 && "SESSION_SECRET is shorter than 32 characters.",
+      !describeHash(c.passwordHash).valid && "ADMIN_PASSWORD_HASH has an unknown format.",
+    ].filter(Boolean),
+  };
+}
+export type PublicConfig = ReturnType<typeof publicConfig>;
+
+/**
+ * Handles, under basePath (default /api/auth):
+ *   POST /login  · POST /logout  · GET /session  · GET /config (admin only)
+ * Returns null for any other URL so you can fall through to your own routes.
+ */
 export function createAuthHandler(opts?: AuthOptions) {
   return async (request: Request): Promise<Response | null> => {
     const c = resolve(opts);
     const path = new URL(request.url).pathname;
     if (!path.startsWith(c.basePath + "/")) return null;
-    const action = path.slice(c.basePath.length + 1);
+    const action = `${request.method} ${path.slice(c.basePath.length + 1)}`;
 
-    if (action === "session" && request.method === "GET") {
+    if (action === "GET session") {
       const { user, setCookie } = await getSession(request, opts);
-      return json({ user }, 200, setCookie);
+      return json({ user: user && { username: user.username }, appName: c.appName }, 200, setCookie);
     }
-    if (action === "logout" && request.method === "POST") return json({ ok: true }, 200, cookie(c, "", 0));
-    if (action !== "login" || request.method !== "POST") return null;
+    if (action === "GET config") {
+      const { user, setCookie } = await getSession(request, opts);
+      return user ? json(publicConfig(c, user), 200, setCookie) : json({ error: "unauthorized" }, 401);
+    }
+    if (action === "POST logout") return json({ ok: true }, 200, cookie(c, "", 0));
+    if (action !== "POST login") return null;
 
     const ip = ipOf(request);
     const now = Date.now();
@@ -143,8 +167,9 @@ export function createAuthHandler(opts?: AuthOptions) {
     const password = typeof body?.password === "string" ? body.password.slice(0, 200) : "";
     if (!username || !password) return json({ error: "Username and password are required." }, 400);
 
+    // Always hash, even for a wrong username, so timing reveals nothing.
+    const passOk = await verifyPassword(password, c.passwordHash);
     const userOk = timingSafeEqual(username, c.username);
-    const passOk = timingSafeEqual(await sha256Hex(`${c.salt}:${password}`), c.passwordHash);
     if (!userOk || !passOk) {
       entry.count += 1;
       if (entry.count >= c.maxAttempts) Object.assign(entry, { count: 0, lockedUntil: now + c.lockoutSeconds * 1000 });
@@ -152,7 +177,6 @@ export function createAuthHandler(opts?: AuthOptions) {
       return json({ error: "Invalid credentials", attemptsLeft: c.maxAttempts - entry.count }, 401);
     }
     attempts.delete(ip);
-    const token = await signToken(c, username);
-    return json({ user: { username } }, 200, cookie(c, token, body?.remember ? c.ttlSeconds : undefined));
+    return json({ user: { username } }, 200, cookie(c, await signToken(c, username), body?.remember ? c.ttlSeconds : undefined));
   };
 }
