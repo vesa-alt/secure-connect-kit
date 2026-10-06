@@ -50,6 +50,7 @@ ADMIN_USERNAME=admin
 ADMIN_PASSWORD_HASH=pbkdf2_sha256:100000:Xq3…:k9F…
 AUTH_APP_NAME=My Project                          # optional
 AUTH_SESSION_TTL=86400                            # optional, seconds
+AUTH_COOKIE_SAMESITE=Lax                          # optional: Lax | Strict | None (use None if the app is shown inside an iframe on another site)
 AUTH_ENABLED=true                                 # optional, "false" turns auth off
 ```
 

@@ -4,7 +4,7 @@ import { loadEnv, type Plugin } from "vite";
 import { createAuthHandler, type AuthOptions } from "./auth.server";
 import { toNodeMiddleware } from "./node";
 
-const KEYS = ["SESSION_SECRET", "ADMIN_USERNAME", "ADMIN_PASSWORD_HASH", "AUTH_APP_NAME", "AUTH_ENABLED", "AUTH_SESSION_TTL"];
+const KEYS = ["SESSION_SECRET", "ADMIN_USERNAME", "ADMIN_PASSWORD_HASH", "AUTH_APP_NAME", "AUTH_ENABLED", "AUTH_SESSION_TTL", "AUTH_COOKIE_SAMESITE"];
 
 export function sharedEnvLogin(opts?: AuthOptions): Plugin {
   let mw: ReturnType<typeof toNodeMiddleware>;
