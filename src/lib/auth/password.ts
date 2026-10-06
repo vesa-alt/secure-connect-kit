@@ -1,6 +1,6 @@
 // Password encoding shared by server, browser and CLI. Uses WebCrypto only.
 //
-// Encoded format (what you store in ADMIN_PASSWORD_HASH):
+// Encoded format (what you store in AUTH_PASSWORD_HASH):
 //   pbkdf2_sha256:<iterations>:<salt base64url>:<hash base64url>
 //
 // The plain password is never stored. At sign-in the library reads the algorithm,
@@ -33,7 +33,7 @@ async function pbkdf2(password: string, salt: Uint8Array, iterations: number) {
   return toB64url(new Uint8Array(bits));
 }
 
-/** Encode a password for storage in ADMIN_PASSWORD_HASH. */
+/** Encode a password for storage in AUTH_PASSWORD_HASH. */
 export async function hashPassword(password: string, iterations = DEFAULT_ITERATIONS) {
   const salt = crypto.getRandomValues(new Uint8Array(16));
   return `pbkdf2_sha256:${iterations}:${toB64url(salt)}:${await pbkdf2(password, salt, iterations)}`;

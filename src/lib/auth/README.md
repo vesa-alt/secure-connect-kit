@@ -46,8 +46,8 @@ node src/auth/hash-password.mjs "your-strong-password"
 
 ```dotenv
 SESSION_SECRET=<random string, 32+ chars>        # openssl rand -hex 32
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD_HASH=pbkdf2_sha256:100000:Xq3…:k9F…
+AUTH_USERNAME=sadie                               # any username you like (default: admin)
+AUTH_PASSWORD_HASH=pbkdf2_sha256:100000:Xq3…:k9F…
 AUTH_APP_NAME=My Project                          # optional
 AUTH_SESSION_TTL=86400                            # optional, seconds
 AUTH_COOKIE_SAMESITE=Lax                          # optional: Lax | Strict | None (use None if the app is shown inside an iframe on another site)
@@ -80,7 +80,7 @@ if (!user) return <button disabled>Sign in to edit</button>;
 
 ## How passwords work
 
-The plain password is never stored anywhere. Only an encoded value is kept in `ADMIN_PASSWORD_HASH`:
+The plain password is never stored anywhere. Only an encoded value is kept in `AUTH_PASSWORD_HASH`:
 
 ```
 pbkdf2_sha256 : 100000 : <salt> : <hash>
@@ -89,7 +89,7 @@ pbkdf2_sha256 : 100000 : <salt> : <hash>
 
 At sign-in, the library:
 
-1. reads the algorithm, rounds and salt from `ADMIN_PASSWORD_HASH`,
+1. reads the algorithm, rounds and salt from `AUTH_PASSWORD_HASH`,
 2. encodes the typed password with exactly those settings,
 3. compares the result with the stored hash in constant time, so response timing reveals nothing.
 
@@ -132,8 +132,8 @@ createAuthHandler({ username, passwordHash, secret, appName, enabled, cookieName
                     ttlSeconds, maxAttempts, lockoutSeconds, basePath });
 ```
 
-To share one identity across all your apps, give every app the same `SESSION_SECRET`, `ADMIN_USERNAME` and
-`ADMIN_PASSWORD_HASH`. To give one project its own login, set different values in that project only.
+To share one identity across all your apps, give every app the same `SESSION_SECRET`, `AUTH_USERNAME` and
+`AUTH_PASSWORD_HASH`. To give one project its own login, set different values in that project only.
 
 ---
 
@@ -179,7 +179,7 @@ if (response) return response;
 | Cookie | `HttpOnly; Secure; SameSite=Lax`, so JavaScript cannot read it |
 | Expiry | Sliding: the token is re-issued once past half its lifetime |
 | Brute force | 5 failures per IP lead to a 15-minute lockout (`429`). The counter lives in memory, per server instance |
-| Revocation | Changing `SESSION_SECRET` or `ADMIN_PASSWORD_HASH` invalidates every session |
+| Revocation | Changing `SESSION_SECRET` or `AUTH_PASSWORD_HASH` invalidates every session |
 | Admin page | Shows only non-secret settings. It never shows the secret or the hash |
 
 **Note:** browsers send `Secure` cookies only over HTTPS or on `localhost`.

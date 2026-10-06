@@ -205,7 +205,7 @@ const { user, login, logout } = useAuth();`}</Code>
         <table className="w-full text-sm">
           <tbody className="[&_td]:border-b [&_td]:border-border [&_td]:py-2 [&_td:first-child]:font-mono [&_td:first-child]:text-primary">
             <tr><td>SESSION_SECRET</td><td>HMAC signing key. Rotate to revoke every session.</td></tr>
-            <tr><td>ADMIN_PASSWORD_HASH</td><td>Encoded password <code>pbkdf2_sha256:iterations:salt:hash</code>. Generate it on the Admin page or with <code>node hash-password.mjs</code>. Changing it signs everyone out.</td></tr>
+            <tr><td>AUTH_PASSWORD_HASH</td><td>Encoded password <code>pbkdf2_sha256:iterations:salt:hash</code>. Generate it on the Admin page or with <code>node hash-password.mjs</code>. Changing it signs everyone out.</td></tr>
             <tr><td>ADMIN_PASSWORD_SALT / _HASH</td><td>Hex SHA-256 of <code>salt:password</code>. Changing it also revokes sessions.</td></tr>
             <tr><td>defaultAuthConfig</td><td><code>enabled</code>, <code>sessionTtlSeconds</code> (24h sliding), <code>maxAttempts</code> (5), <code>lockoutSeconds</code> (15 min).</td></tr>
           </tbody>
