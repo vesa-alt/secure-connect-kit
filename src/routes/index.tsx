@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { AuthBanner, AuthProvider, FullPageGuard, LoginCard, useAuth } from "@/lib/auth/client";
 
