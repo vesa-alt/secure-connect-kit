@@ -45,7 +45,7 @@ export function AdminPanel({ basePath = "/api/auth" }: { basePath?: string }) {
       </div>
 
       {error && <p className="sa-warn">Could not load configuration ({error}).</p>}
-      {cfg?.warnings.map((w) => <p key={w} className="sa-warn">⚠ {w}</p>)}
+      {cfg?.warnings.filter((w): w is string => Boolean(w)).map((w) => <p key={w} className="sa-warn">⚠ {w}</p>)}
 
       {cfg && (
         <div className="sa-grid">
