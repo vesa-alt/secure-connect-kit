@@ -46,7 +46,7 @@ node src/auth/hash-password.mjs "your-strong-password"
 
 ```dotenv
 SESSION_SECRET=<random string, 32+ chars>        # openssl rand -hex 32
-AUTH_USERNAME=admin
+AUTH_USERNAME=sadie                               # any username you like (default: admin)
 AUTH_PASSWORD_HASH=pbkdf2_sha256:100000:Xq3…:k9F…
 AUTH_APP_NAME=My Project                          # optional
 AUTH_SESSION_TTL=86400                            # optional, seconds
