@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Usage: node src/auth/hash-password.mjs "my-password"
-// Prints the encoded value to put in ADMIN_PASSWORD_HASH.
+// Prints the encoded value to put in AUTH_PASSWORD_HASH.
 import { pbkdf2Sync, randomBytes } from "node:crypto";
 
 const password = process.argv[2];

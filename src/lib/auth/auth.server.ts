@@ -6,8 +6,8 @@ export { hashPassword, verifyPassword, timingSafeEqual } from "./password";
 
 export type AuthOptions = {
   secret?: string; // default: env SESSION_SECRET
-  username?: string; // default: env ADMIN_USERNAME || "admin"
-  passwordHash?: string; // encoded value, default: env ADMIN_PASSWORD_HASH
+  username?: string; // default: env AUTH_USERNAME || "admin"
+  passwordHash?: string; // encoded value, default: env AUTH_PASSWORD_HASH
   appName?: string; // default: env AUTH_APP_NAME
   enabled?: boolean; // default: env AUTH_ENABLED !== "false"
   cookieName?: string;
@@ -28,10 +28,10 @@ const env = (k: string) => (typeof process !== "undefined" ? process.env?.[k] : 
 function resolve(o: AuthOptions = {}) {
   const secret = o.secret ?? env("SESSION_SECRET");
   if (!secret) throw new Error("[sharedenv-login] SESSION_SECRET is not configured");
-  const passwordHash = o.passwordHash ?? env("ADMIN_PASSWORD_HASH");
+  const passwordHash = o.passwordHash ?? (env("AUTH_PASSWORD_HASH") ?? env("ADMIN_PASSWORD_HASH"));
   return {
     secret,
-    username: o.username ?? env("ADMIN_USERNAME") ?? "admin",
+    username: o.username ?? env("AUTH_USERNAME") ?? env("ADMIN_USERNAME") ?? "admin",
     passwordHash: passwordHash ?? DEMO_HASH,
     demoCredentials: !passwordHash,
     appName: o.appName ?? env("AUTH_APP_NAME") ?? "App",
@@ -110,6 +110,9 @@ export async function requireAdmin(request: Request, opts?: AuthOptions) {
   return { user, response: null, setCookie };
 }
 
+/** Alias of requireAdmin — use whichever name reads better. */
+export const requireAuth = (request: Request, opts?: AuthOptions) => requireAdmin(request, opts);
+
 /** Safe, non-secret view of the active configuration (for the admin page). */
 function publicConfig(c: Cfg, user: SessionUser) {
   const now = Date.now();
@@ -117,7 +120,7 @@ function publicConfig(c: Cfg, user: SessionUser) {
     appName: c.appName,
     enabled: c.enabled,
     username: c.username,
-    password: { ...describeHash(c.passwordHash), source: c.demoCredentials ? "demo default" : "ADMIN_PASSWORD_HASH" },
+    password: { ...describeHash(c.passwordHash), source: c.demoCredentials ? "demo default" : "AUTH_PASSWORD_HASH" },
     sessionSecret: { set: true, length: c.secret.length, strong: c.secret.length >= 32 },
     cookie: { name: c.cookieName, flags: `HttpOnly; Secure; SameSite=${c.sameSite}` },
     session: { ttlSeconds: c.ttlSeconds, sliding: true, issuedAt: user.iat, expiresAt: user.exp },
@@ -128,9 +131,9 @@ function publicConfig(c: Cfg, user: SessionUser) {
     },
     basePath: c.basePath,
     warnings: [
-      c.demoCredentials && "Demo password in use — set ADMIN_PASSWORD_HASH.",
+      c.demoCredentials && "Demo password in use — set AUTH_PASSWORD_HASH.",
       c.secret.length < 32 && "SESSION_SECRET is shorter than 32 characters.",
-      !describeHash(c.passwordHash).valid && "ADMIN_PASSWORD_HASH has an unknown format.",
+      !describeHash(c.passwordHash).valid && "AUTH_PASSWORD_HASH has an unknown format.",
     ].filter(Boolean),
   };
 }
@@ -138,7 +141,7 @@ export type PublicConfig = ReturnType<typeof publicConfig>;
 
 /**
  * Handles, under basePath (default /api/auth):
- *   POST /login  · POST /logout  · GET /session  · GET /config (admin only)
+ *   POST /login  · POST /logout  · GET /session  · GET /config (signed in only)
  * Returns null for any other URL so you can fall through to your own routes.
  */
 export function createAuthHandler(opts?: AuthOptions) {

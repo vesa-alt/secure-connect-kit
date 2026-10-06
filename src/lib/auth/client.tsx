@@ -112,7 +112,7 @@ export function AuthBanner({ position = "top" }: { position?: "top" | "bottom" }
       ) : (
         <form className="sa-row" onSubmit={(e) => submit(e)}>
           <LockIcon />
-          <span className="sa-tag">Admin</span>
+          <span className="sa-tag">Protected</span>
           <input className="sa-input" name="username" aria-label="Username" placeholder="Username" />
           <input className="sa-input" name="password" type="password" aria-label="Password" placeholder="Password" />
           <button className="sa-btn" disabled={busy}>{busy ? "…" : "Sign In"}</button>
@@ -133,7 +133,7 @@ export function LoginCard({ title = "Restricted area", onSuccess }: { title?: st
         <div className="sa-badge"><LockIcon /></div>
         <div>
           <h2 className="sa-title">{title}</h2>
-          <p className="sa-sub">Sign in with your admin credentials</p>
+          <p className="sa-sub">Sign in with your username and password</p>
         </div>
       </div>
       <label className="sa-label">Username</label>

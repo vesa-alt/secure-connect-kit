@@ -52,7 +52,7 @@ export function AdminPanel({ basePath = "/api/auth" }: { basePath?: string }) {
           <section className="sa-panel">
             <h3>Identity</h3>
             <Row k="Auth enabled" v={<Flag ok={cfg.enabled} />} />
-            <Row k="Admin username" v={cfg.username} />
+            <Row k="Username" v={cfg.username} />
             <Row k="Password source" v={cfg.password.source} />
             <Row k="Algorithm" v={cfg.password.algorithm} />
             <Row k="Iterations" v={cfg.password.iterations.toLocaleString()} />
@@ -90,7 +90,7 @@ export function HashTool() {
     const pw = String(new FormData(e.currentTarget).get("pw") ?? "");
     if (pw.length < 8) return setOut("Use at least 8 characters.");
     setBusy(true);
-    setOut(`ADMIN_PASSWORD_HASH=${await hashPassword(pw)}`);
+    setOut(`AUTH_PASSWORD_HASH=${await hashPassword(pw)}`);
     setBusy(false);
   }
   return (

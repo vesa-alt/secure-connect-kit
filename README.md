@@ -28,8 +28,8 @@ src/routes/admin.tsx     ← <FullPageGuard><AdminPanel/></FullPageGuard>
 | Variable | Required | Meaning |
 | --- | --- | --- |
 | `SESSION_SECRET` | yes | Key that signs sessions (32+ random characters) |
-| `ADMIN_USERNAME` | no | Admin username. Default `admin` |
-| `ADMIN_PASSWORD_HASH` | recommended | Encoded password (`pbkdf2_sha256:…`). Without it, the demo password `admin123` is used |
+| `AUTH_USERNAME` | no | Admin username. Default `admin` |
+| `AUTH_PASSWORD_HASH` | recommended | Encoded password (`pbkdf2_sha256:…`). Without it, the demo password `admin123` is used |
 | `AUTH_APP_NAME` | no | Name shown on the Admin page |
 | `AUTH_SESSION_TTL` | no | Session lifetime in seconds. Default 86400 |
 | `AUTH_ENABLED` | no | `false` turns protection off |
