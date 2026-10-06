@@ -15,6 +15,8 @@ export type AuthOptions = {
   maxAttempts?: number;
   lockoutSeconds?: number;
   basePath?: string;
+  /** Cookie SameSite. "None" is required when the app runs inside an iframe on another site. Default: env AUTH_COOKIE_SAMESITE || "Lax". */
+  sameSite?: "Lax" | "Strict" | "None";
 };
 export type SessionUser = { username: string; iat: number; exp: number };
 
@@ -39,6 +41,7 @@ function resolve(o: AuthOptions = {}) {
     maxAttempts: o.maxAttempts ?? 5,
     lockoutSeconds: o.lockoutSeconds ?? 15 * 60,
     basePath: o.basePath ?? "/api/auth",
+    sameSite: o.sameSite ?? ((env("AUTH_COOKIE_SAMESITE") as "Lax" | "Strict" | "None" | undefined) ?? "Lax"),
   };
 }
 type Cfg = ReturnType<typeof resolve>;
@@ -83,7 +86,7 @@ function readCookie(r: Request, name: string) {
 }
 
 const cookie = (c: Cfg, value: string, maxAge?: number) =>
-  `${c.cookieName}=${value}; Path=/; HttpOnly; Secure; SameSite=Lax${maxAge !== undefined ? `; Max-Age=${maxAge}` : ""}`;
+  `${c.cookieName}=${value}; Path=/; HttpOnly; Secure; SameSite=${c.sameSite}${maxAge !== undefined ? `; Max-Age=${maxAge}` : ""}`;
 
 const json = (data: unknown, status = 200, setCookie?: string) =>
   new Response(JSON.stringify(data), {
@@ -116,7 +119,7 @@ function publicConfig(c: Cfg, user: SessionUser) {
     username: c.username,
     password: { ...describeHash(c.passwordHash), source: c.demoCredentials ? "demo default" : "ADMIN_PASSWORD_HASH" },
     sessionSecret: { set: true, length: c.secret.length, strong: c.secret.length >= 32 },
-    cookie: { name: c.cookieName, flags: "HttpOnly; Secure; SameSite=Lax" },
+    cookie: { name: c.cookieName, flags: `HttpOnly; Secure; SameSite=${c.sameSite}` },
     session: { ttlSeconds: c.ttlSeconds, sliding: true, issuedAt: user.iat, expiresAt: user.exp },
     rateLimit: {
       maxAttempts: c.maxAttempts,
