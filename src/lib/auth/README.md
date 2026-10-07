@@ -22,7 +22,76 @@ whole app: public pages, protected pages, the API and the built-in **Admin page*
 
 ---
 
-## Install (2 steps)
+## Install as a versioned package (recommended)
+
+Install the library once per project by version number. You don't need to copy any files.
+
+### Publish it once (to your own GitHub)
+
+1. Create a GitHub repo, for example `your-name/sharedenv-login`.
+2. Put the contents of this folder at the **root** of that repo (`package.json` must be at the top level).
+3. Tag a version and push it:
+
+```sh
+git tag v1.0.0
+git push origin main --tags
+```
+
+### Use it in any React + Vite project
+
+```sh
+npm install github:your-name/sharedenv-login#v1.0.0
+# or
+bun add github:your-name/sharedenv-login#v1.0.0
+pnpm add github:your-name/sharedenv-login#v1.0.0
+```
+
+When it installs, the package builds itself through the `prepare` script, so `dist/` doesn't have to be committed.
+For a **private** repo, the installing machine needs Git access to it (SSH key or `GITHUB_TOKEN`).
+
+```ts
+// vite.config.ts
+import { sharedEnvLogin } from "sharedenv-login/vite";
+export default defineConfig({ plugins: [react(), sharedEnvLogin()] });
+```
+
+```tsx
+import { AuthProvider, FullPageGuard, AuthBanner, useAuth } from "sharedenv-login/client";
+import { AdminPanel, HashTool } from "sharedenv-login/admin";            // optional
+import { createAuthHandler, requireAdmin } from "sharedenv-login/server"; // your production server
+import { toNodeMiddleware } from "sharedenv-login/node";                  // Express / Node
+import "sharedenv-login/styles.css";
+```
+
+Create an encoded password: `npx sharedenv-hash-password "your-password"`.
+
+### Release an update
+
+1. Change the code, bump `"version"` in `package.json` (for example `1.0.1`).
+2. `git commit -am "v1.0.1" && git tag v1.0.1 && git push origin main --tags`
+3. In each project, change the number in its `package.json`:
+
+```json
+"dependencies": { "sharedenv-login": "github:your-name/sharedenv-login#v1.0.1" }
+```
+
+Then run `npm install`. Projects stay on their pinned version until you change the number.
+
+Use [semantic versioning](https://semver.org): `1.0.x` fixes, `1.x.0` new features, `x.0.0` breaking changes.
+
+### Optional: publish to npm or GitHub Packages
+
+```sh
+npm login
+npm publish --access public      # then: npm install sharedenv-login@1.0.0
+```
+
+For a private package, rename it to `@your-name/sharedenv-login` and publish it to GitHub Packages
+(`npm publish --registry=https://npm.pkg.github.com`).
+
+---
+
+## Install by copying (no package)
 
 ### 1. Copy the folder, add the plugin, set the environment
 

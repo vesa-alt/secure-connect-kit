@@ -38,7 +38,20 @@ Create an encoded password with `node src/lib/auth/hash-password.mjs "password"`
 
 ## Reusing it in another React + Vite project
 
-1. Copy `src/lib/auth/` to `src/auth/` and add `sharedEnvLogin()` to `vite.config.ts`.
-2. Wrap the app in `<AuthProvider>` and place `<AuthBanner>`, `<FullPageGuard>` or `<AdminPanel>` wherever you need them.
+**Recommended: install it by version from GitHub.** Push `src/lib/auth/` as its own repo, tag `v1.0.0`, then in any project:
+
+```sh
+npm install github:your-name/sharedenv-login#v1.0.0
+```
+
+```ts
+import { sharedEnvLogin } from "sharedenv-login/vite";
+import { AuthProvider, FullPageGuard } from "sharedenv-login/client";
+import "sharedenv-login/styles.css";
+```
+
+To update, tag a new version (`v1.0.1`) and change the number in each project's `package.json`. Publishing to npm or GitHub Packages works the same way. See the library README for full steps.
+
+**Alternative: copy the folder.** Copy `src/lib/auth/` to `src/auth/`, add `sharedEnvLogin()` to `vite.config.ts` and wrap the app in `<AuthProvider>`.
 
 For production servers (Express, Workers, Vercel and others), see the library README.
