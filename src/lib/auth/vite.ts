@@ -1,8 +1,8 @@
 // Vite plugin: serves /api/auth/* from `vite dev` and `vite preview` — no extra server needed locally.
 // Loads SESSION_SECRET, ADMIN_* and AUTH_* from your .env files (Vite does not put them in process.env itself).
 import { loadEnv, type Plugin } from "vite";
-import { createAuthHandler, type AuthOptions } from "./auth.server";
-import { toNodeMiddleware } from "./node";
+import { createAuthHandler, type AuthOptions } from "./auth.server.js";
+import { toNodeMiddleware } from "./node.js";
 
 const KEYS = ["SESSION_SECRET", "AUTH_USERNAME", "AUTH_PASSWORD_HASH", "ADMIN_USERNAME", "ADMIN_PASSWORD_HASH", "AUTH_APP_NAME", "AUTH_ENABLED", "AUTH_SESSION_TTL", "AUTH_COOKIE_SAMESITE"];
 

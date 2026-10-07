@@ -1,8 +1,8 @@
 // Zero-dependency server core. Works anywhere with Web Request/Response + WebCrypto
 // (Node 18+, Vite dev/preview, Express, Cloudflare Workers, Vercel, Netlify, Deno, Bun).
-import { describeHash, timingSafeEqual, toB64url, verifyPassword, fromB64url } from "./password";
+import { describeHash, timingSafeEqual, toB64url, verifyPassword, fromB64url } from "./password.js";
 
-export { hashPassword, verifyPassword, timingSafeEqual } from "./password";
+export { hashPassword, verifyPassword, timingSafeEqual } from "./password.js";
 
 export type AuthOptions = {
   secret?: string; // default: env SESSION_SECRET

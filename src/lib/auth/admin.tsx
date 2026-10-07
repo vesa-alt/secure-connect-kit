@@ -2,9 +2,9 @@
 // plus a tool to encode a new password for ADMIN_PASSWORD_HASH.
 // Wrap it in <FullPageGuard> so it uses the same login as the rest of the app.
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
-import { useAuth } from "./client";
-import { hashPassword } from "./password";
-import type { PublicConfig } from "./auth.server";
+import { useAuth } from "./client.js";
+import { hashPassword } from "./password.js";
+import type { PublicConfig } from "./auth.server.js";
 
 const fmtDuration = (s: number) => (s >= 3600 ? `${+(s / 3600).toFixed(1)} h` : `${Math.round(s / 60)} min`);
 const fmtTime = (unix: number) => new Date(unix * 1000).toLocaleString();
