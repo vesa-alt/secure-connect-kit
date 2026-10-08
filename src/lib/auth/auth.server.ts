@@ -29,6 +29,8 @@ function resolve(o: AuthOptions = {}) {
   const secret = o.secret ?? env("SESSION_SECRET");
   if (!secret) throw new Error("[sharedenv-login] SESSION_SECRET is not configured");
   const passwordHash = o.passwordHash ?? (env("AUTH_PASSWORD_HASH") ?? env("ADMIN_PASSWORD_HASH"));
+  const ttl = o.ttlSeconds ?? Number(env("AUTH_SESSION_TTL") ?? 60 * 60 * 24);
+  const ss = o.sameSite ?? env("AUTH_COOKIE_SAMESITE") ?? "Lax";
   return {
     secret,
     username: o.username ?? env("AUTH_USERNAME") ?? env("ADMIN_USERNAME") ?? "admin",
@@ -37,12 +39,33 @@ function resolve(o: AuthOptions = {}) {
     appName: o.appName ?? env("AUTH_APP_NAME") ?? "App",
     enabled: o.enabled ?? env("AUTH_ENABLED") !== "false",
     cookieName: o.cookieName ?? "sharedenv_session",
-    ttlSeconds: o.ttlSeconds ?? Number(env("AUTH_SESSION_TTL") ?? 60 * 60 * 24),
+    ttlSeconds: Number.isFinite(ttl) && ttl > 0 ? Math.floor(ttl) : 60 * 60 * 24,
     maxAttempts: o.maxAttempts ?? 5,
     lockoutSeconds: o.lockoutSeconds ?? 15 * 60,
     basePath: o.basePath ?? "/api/auth",
-    sameSite: o.sameSite ?? ((env("AUTH_COOKIE_SAMESITE") as "Lax" | "Strict" | "None" | undefined) ?? "Lax"),
+    sameSite: (["Lax", "Strict", "None"].includes(ss) ? ss : "Lax") as "Lax" | "Strict" | "None",
   };
+}
+
+// Production guard: refuse demo credentials or a weak secret when NODE_ENV=production.
+let warned = false;
+function checkProduction(c: Cfg) {
+  if (env("NODE_ENV") !== "production" || warned) return;
+  warned = true;
+  if (c.demoCredentials) console.warn("[sharedenv-login] WARNING: demo password in use in production. Set AUTH_PASSWORD_HASH.");
+  if (c.secret.length < 32) console.warn("[sharedenv-login] WARNING: SESSION_SECRET is shorter than 32 characters.");
+}
+
+/** Reject cross-site POSTs (CSRF): if an Origin header is present, its host must match the request host. */
+function sameOrigin(r: Request) {
+  const origin = r.headers.get("origin");
+  if (!origin || origin === "null") return !origin;
+  try {
+    const host = r.headers.get("x-forwarded-host") ?? r.headers.get("host") ?? new URL(r.url).host;
+    return new URL(origin).host === host;
+  } catch {
+    return false;
+  }
 }
 type Cfg = ReturnType<typeof resolve>;
 
@@ -147,18 +170,12 @@ export type PublicConfig = ReturnType<typeof publicConfig>;
 export function createAuthHandler(opts?: AuthOptions) {
   return async (request: Request): Promise<Response | null> => {
     const c = resolve(opts);
+    checkProduction(c);
     const path = new URL(request.url).pathname;
     if (!path.startsWith(c.basePath + "/")) return null;
     const action = `${request.method} ${path.slice(c.basePath.length + 1)}`;
-
-    if (action === "GET session") {
-      const { user, setCookie } = await getSession(request, opts);
-      return json({ user: user && { username: user.username }, appName: c.appName }, 200, setCookie);
-    }
-    if (action === "GET config") {
-      const { user, setCookie } = await getSession(request, opts);
-      return user ? json(publicConfig(c, user), 200, setCookie) : json({ error: "unauthorized" }, 401);
-    }
+    if (request.method === "POST" && !sameOrigin(request)) return json({ error: "Cross-site request blocked" }, 403);
+...
     if (action === "POST logout") return json({ ok: true }, 200, cookie(c, "", 0));
     if (action !== "POST login") return null;
 
