@@ -43,6 +43,12 @@ function Page() {
         </div>
       </header>
       <main className="mx-auto max-w-6xl px-6 py-10">{tab === "play" ? <Playground /> : <Docs />}</main>
+      <footer className="border-t border-border">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4 font-mono text-xs text-muted-foreground">
+          <span>One necessary session cookie · no tracking</span>
+          <Link to="/privacy" className="hover:text-foreground">Privacy notice</Link>
+        </div>
+      </footer>
     </div>
   );
 }
