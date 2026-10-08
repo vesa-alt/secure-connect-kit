@@ -175,7 +175,15 @@ export function createAuthHandler(opts?: AuthOptions) {
     if (!path.startsWith(c.basePath + "/")) return null;
     const action = `${request.method} ${path.slice(c.basePath.length + 1)}`;
     if (request.method === "POST" && !sameOrigin(request)) return json({ error: "Cross-site request blocked" }, 403);
-...
+
+    if (action === "GET session") {
+      const { user, setCookie } = await getSession(request, opts);
+      return json({ user: user && { username: user.username }, appName: c.appName }, 200, setCookie);
+    }
+    if (action === "GET config") {
+      const { user, setCookie } = await getSession(request, opts);
+      return user ? json(publicConfig(c, user), 200, setCookie) : json({ error: "unauthorized" }, 401);
+    }
     if (action === "POST logout") return json({ ok: true }, 200, cookie(c, "", 0));
     if (action !== "POST login") return null;
 
