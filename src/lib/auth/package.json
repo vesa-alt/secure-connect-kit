@@ -6,7 +6,8 @@
   "license": "MIT",
   "sideEffects": ["*.css"],
   "bin": { "sharedenv-hash-password": "./dist/hash-password.mjs" },
-  "files": ["dist", "README.md"],
+  "files": ["dist", "README.md", "CHANGELOG.md", "LICENSE"],
+  "engines": { "node": ">=18" },
   "exports": {
     "./client": { "types": "./dist/client.d.ts", "default": "./dist/client.js" },
     "./admin": { "types": "./dist/admin.d.ts", "default": "./dist/admin.js" },

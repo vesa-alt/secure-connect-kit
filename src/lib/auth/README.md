@@ -252,3 +252,14 @@ if (response) return response;
 | Admin page | Shows only non-secret settings. It never shows the secret or the hash |
 
 **Note:** browsers send `Secure` cookies only over HTTPS or on `localhost`.
+
+---
+
+## Production checklist
+
+- [ ] `SESSION_SECRET` set, 32+ random characters (`openssl rand -hex 32`)
+- [ ] `AUTH_PASSWORD_HASH` set (the demo password logs a warning when `NODE_ENV=production`)
+- [ ] Served over **HTTPS** (the cookie is `Secure`)
+- [ ] `.env` is not committed
+- [ ] Several server instances? The lockout counter is per instance; add a shared limit (e.g. at your proxy) if needed
+- [ ] Cross-site POSTs to `/login` and `/logout` are rejected automatically (`403`)
