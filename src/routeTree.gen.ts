@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiProtectedDataRouteImport } from './routes/api/protected/data'
 
@@ -22,6 +23,11 @@ const IndexRoute = IndexRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
@@ -38,12 +44,14 @@ const ApiProtectedDataRoute = ApiProtectedDataRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/privacy': typeof PrivacyRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/protected/data': typeof ApiProtectedDataRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/privacy': typeof PrivacyRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/protected/data': typeof ApiProtectedDataRoute
 }
@@ -51,20 +59,28 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/privacy': typeof PrivacyRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/protected/data': typeof ApiProtectedDataRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/api/auth/$' | '/api/protected/data'
+  fullPaths: '/' | '/admin' | '/privacy' | '/api/auth/$' | '/api/protected/data'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/api/auth/$' | '/api/protected/data'
-  id: '__root__' | '/' | '/admin' | '/api/auth/$' | '/api/protected/data'
+  to: '/' | '/admin' | '/privacy' | '/api/auth/$' | '/api/protected/data'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/privacy'
+    | '/api/auth/$'
+    | '/api/protected/data'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  PrivacyRoute: typeof PrivacyRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiProtectedDataRoute: typeof ApiProtectedDataRoute
 }
@@ -83,6 +99,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/auth/$': {
@@ -105,6 +128,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  PrivacyRoute: PrivacyRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiProtectedDataRoute: ApiProtectedDataRoute,
 }
